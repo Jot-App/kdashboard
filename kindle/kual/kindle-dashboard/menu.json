@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "name": "Kindle Dashboard",
+      "priority": 10,
+      "items": [
+        {
+          "name": "Start Dashboard (Light)",
+          "priority": 1,
+          "action": "/bin/sh",
+          "params": "/mnt/us/extensions/kindle-dashboard/bin/start-light.sh",
+          "exitmenu": true
+        },
+        {
+          "name": "Start Dashboard (Dark)",
+          "priority": 2,
+          "action": "/bin/sh",
+          "params": "/mnt/us/extensions/kindle-dashboard/bin/start-dark.sh",
+          "exitmenu": true
+        },
+        {
+          "name": "Refresh Once (Light)",
+          "priority": 3,
+          "action": "/bin/sh",
+          "params": "/mnt/us/extensions/kindle-dashboard/bin/once-light.sh",
+          "exitmenu": false
+        },
+        {
+          "name": "Refresh Once (Dark)",
+          "priority": 4,
+          "action": "/bin/sh",
+          "params": "/mnt/us/extensions/kindle-dashboard/bin/once-dark.sh",
+          "exitmenu": false
+        },
+        {
+          "name": "Stop Dashboard",
+          "priority": 5,
+          "action": "/bin/sh",
+          "params": "/mnt/us/extensions/kindle-dashboard/bin/stop.sh",
+          "exitmenu": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# Copy this file to config.sh inside the installed KUAL extension and replace
+# the URLs with your own InsForge project endpoints.
+
+DASHBOARD_DATA_URL="https://your-project.insforge.app/functions/kindle-dashboard-data"
+DASHBOARD_EVENTS_URL="https://your-project.function2.insforge.app/kindle-dashboard-events"
+DASHBOARD_TOGGLE_URL="https://your-project.insforge.app/functions/kindle-dashboard-toggle"
+DASHBOARD_TOGGLE_TOKEN="replace-with-your-generated-toggle-token"
+
+# Always-on defaults. Override only if you know you want a different mode.
+INTERVAL="3600"
+DASHBOARD_KEEP_AWAKE="1"
+DASHBOARD_SLEEP_WINDOW="off"
+# Optional: leave unset to use the Kindle's own timezone.
+# DASHBOARD_TIMEZONE="Asia/Kolkata"
+INVERT_IMAGES="0"

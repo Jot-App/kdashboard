@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "generated_at": "2026-06-28T08:30:00.000Z",
+  "version": "fixture",
+  "health": {
+    "date": "2026-06-28",
+    "steps": 8432,
+    "calories": 1675,
+    "protein_g": 72,
+    "steps_target": 10000,
+    "calories_target": 2000,
+    "steps_unit": "steps",
+    "calories_unit": "kcal",
+    "synced_at": "2026-06-28T08:25:00.000Z"
+  },
+  "challenge": {
+    "date": "2026-06-28",
+    "water_l": 1,
+    "water_target_l": 3,
+    "sleep_hours": 7.5,
+    "sleep_target_hours": 8,
+    "workouts": 1,
+    "workout_target": 2
+  },
+  "lists": [
+    {
+      "key": "todo",
+      "title": "Chores",
+      "items": [
+        { "id": "1", "text": "Read paper notes", "done": false, "updated_at": "2026-06-28T08:00:00.000Z" },
+        { "id": "2", "text": "Charge Kindle", "done": true, "updated_at": "2026-06-28T07:00:00.000Z" }
+      ]
+    },
+    {
+      "key": "grocery",
+      "title": "Grocery",
+      "items": [
+        { "id": "3", "text": "Milk", "done": false, "updated_at": "2026-06-28T08:10:00.000Z" },
+        { "id": "4", "text": "Eggs", "done": false, "updated_at": "2026-06-28T08:11:00.000Z" }
+      ]
+    }
+  ]
+}
