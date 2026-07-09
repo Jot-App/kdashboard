@@ -39,8 +39,8 @@ npm run kit:backend
 ```
 
 The bootstrap script applies the public schema migrations, creates generated
-`TELEGRAM_WEBHOOK_SECRET`, `HEALTH_SYNC_TOKEN`, and `DASHBOARD_TOGGLE_TOKEN`
-values if missing, and deploys the dashboard functions.
+`TELEGRAM_WEBHOOK_SECRET`, `HEALTH_SYNC_TOKEN`, `DASHBOARD_READ_TOKEN`, and
+`DASHBOARD_TOGGLE_TOKEN` values if missing, and deploys the dashboard functions.
 
 It skips optional sample recipe/photo migrations by default. To include the
 sample-data migrations anyway:
@@ -286,6 +286,7 @@ cp config.sh.example config.sh
 DASHBOARD_DATA_URL="https://your-project.insforge.app/functions/kindle-dashboard-data"
 DASHBOARD_EVENTS_URL="https://your-project.function2.insforge.app/kindle-dashboard-events"
 DASHBOARD_TOGGLE_URL="https://your-project.insforge.app/functions/kindle-dashboard-toggle"
+DASHBOARD_READ_TOKEN="replace-with-your-generated-read-token"
 DASHBOARD_TOGGLE_TOKEN="replace-with-your-generated-toggle-token"
 INTERVAL="3600"
 DASHBOARD_KEEP_AWAKE="1"
@@ -293,9 +294,10 @@ DASHBOARD_SLEEP_WINDOW="off"
 INVERT_IMAGES="0"
 ```
 
-Fetch the token from InsForge and paste it into `config.sh`:
+Fetch the tokens from InsForge and paste them into `config.sh`:
 
 ```sh
+npx @insforge/cli secrets get DASHBOARD_READ_TOKEN --json
 npx @insforge/cli secrets get DASHBOARD_TOGGLE_TOKEN --json
 ```
 
@@ -306,7 +308,7 @@ If you use the local installer script, set your data URL explicitly so it does
 not seed from the wrong backend:
 
 ```sh
-DASHBOARD_DATA_URL=https://your-project.insforge.app/functions/kindle-dashboard-data npm run native:install
+DASHBOARD_DATA_URL=https://your-project.insforge.app/functions/kindle-dashboard-data DASHBOARD_READ_TOKEN=<read-token> npm run native:install
 ```
 
 ## 5. Launch On Kindle
@@ -377,8 +379,10 @@ Then replace the installed KUAL extension files, keeping your local `config.sh`.
 
 - Do not share `INSFORGE_API_KEY`, Telegram bot token, webhook secret, or health
   sync token.
-- Treat `DASHBOARD_TOGGLE_TOKEN` as a device secret. It is less powerful than
-  the InsForge admin key, but it can change checklist state.
-- The Kindle reads dashboard data through your deployed function URLs.
+- Treat `DASHBOARD_READ_TOKEN` and `DASHBOARD_TOGGLE_TOKEN` as device secrets.
+  The read token exposes dashboard data, while the toggle token can change
+  checklist state.
+- The Kindle reads dashboard data through your deployed function URLs using
+  the read token.
 - This kit is single-owner by design. For a hosted multi-user service, every
   table and function would need per-user scoping and device pairing.

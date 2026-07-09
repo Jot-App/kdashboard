@@ -7,6 +7,7 @@ const volumeArg = process.argv.slice(2).find((arg) => arg !== "--force");
 const dataUrl = process.env.DASHBOARD_DATA_URL || "";
 const eventsUrl = process.env.DASHBOARD_EVENTS_URL || "";
 const toggleUrl = process.env.DASHBOARD_TOGGLE_URL || "";
+const readToken = process.env.DASHBOARD_READ_TOKEN || "";
 const toggleToken = process.env.DASHBOARD_TOGGLE_TOKEN || "";
 const archive = path.resolve("kindle/native/build/kindle-dashboard-kual.tar.gz");
 const volume = path.resolve(volumeArg || "/Volumes/Kindle");
@@ -66,6 +67,7 @@ if (existingConfig) {
       `DASHBOARD_DATA_URL="${shellDoubleQuote(dataUrl)}"`,
       `DASHBOARD_EVENTS_URL="${shellDoubleQuote(eventsUrl)}"`,
       `DASHBOARD_TOGGLE_URL="${shellDoubleQuote(toggleUrl)}"`,
+      `DASHBOARD_READ_TOKEN="${shellDoubleQuote(readToken)}"`,
       `DASHBOARD_TOGGLE_TOKEN="${shellDoubleQuote(toggleToken)}"`,
       "",
       'INTERVAL="3600"',
@@ -80,7 +82,9 @@ if (existingConfig) {
 
 if (dataUrl) {
   try {
-    const response = await fetch(dataUrl);
+    const response = await fetch(dataUrl, {
+      headers: readToken ? { "X-Dashboard-Read-Token": readToken } : undefined
+    });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }

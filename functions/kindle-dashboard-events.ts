@@ -69,6 +69,13 @@ export default function(req: Request): Response {
     });
   }
 
+  if (!isAuthorizedDashboardRead(req)) {
+    return new Response(JSON.stringify({ ok: false, error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders(), "Content-Type": "application/json; charset=utf-8" }
+    });
+  }
+
   const encoder = new TextEncoder();
   let lastVersion = "";
   let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -247,8 +254,22 @@ function corsHeaders(): HeadersInit {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, X-Dashboard-Read-Token, Authorization"
   };
+}
+
+function isAuthorizedDashboardRead(req: Request): boolean {
+  const configuredToken = requiredEnv("DASHBOARD_READ_TOKEN");
+  const receivedToken =
+    req.headers.get("x-dashboard-read-token") ||
+    bearerToken(req.headers.get("authorization")) ||
+    new URL(req.url).searchParams.get("read_token");
+  return Boolean(receivedToken) && receivedToken === configuredToken;
+}
+
+function bearerToken(header: string | null): string {
+  const match = /^Bearer\s+(.+)$/i.exec(header || "");
+  return match?.[1]?.trim() || "";
 }
 
 function requiredEnv(key: string): string {

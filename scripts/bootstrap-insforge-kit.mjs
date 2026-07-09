@@ -65,6 +65,7 @@ if (!skipSecrets) {
   console.log("Ensuring generated backend secrets exist...");
   ensureSecret("TELEGRAM_WEBHOOK_SECRET", randomSecret());
   ensureSecret("HEALTH_SYNC_TOKEN", randomSecret());
+  ensureSecret("DASHBOARD_READ_TOKEN", randomSecret());
   ensureSecret("DASHBOARD_TOGGLE_TOKEN", randomSecret());
 }
 

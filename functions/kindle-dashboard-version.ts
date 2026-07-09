@@ -24,6 +24,10 @@ export default async function(req: Request): Promise<Response> {
     return jsonResponse({ ok: false, error: "Method not allowed" }, 405);
   }
 
+  if (!isAuthorizedDashboardRead(req)) {
+    return jsonResponse({ ok: false, error: "Unauthorized" }, 401);
+  }
+
   try {
     const admin = createAdminClient({
       baseUrl: requiredEnv("INSFORGE_BASE_URL"),
@@ -71,8 +75,22 @@ function corsHeaders(): HeadersInit {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, X-Dashboard-Read-Token, Authorization"
   };
+}
+
+function isAuthorizedDashboardRead(req: Request): boolean {
+  const configuredToken = requiredEnv("DASHBOARD_READ_TOKEN");
+  const receivedToken =
+    req.headers.get("x-dashboard-read-token") ||
+    bearerToken(req.headers.get("authorization")) ||
+    new URL(req.url).searchParams.get("read_token");
+  return Boolean(receivedToken) && receivedToken === configuredToken;
+}
+
+function bearerToken(header: string | null): string {
+  const match = /^Bearer\s+(.+)$/i.exec(header || "");
+  return match?.[1]?.trim() || "";
 }
 
 function requiredEnv(key: string): string {

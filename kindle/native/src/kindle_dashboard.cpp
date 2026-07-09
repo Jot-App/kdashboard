@@ -143,6 +143,7 @@ struct Options {
   char url[256];
   char events_url[256];
   char toggle_url[256];
+  char read_token[160];
   char toggle_token[160];
   char cache[256];
   char render_only[256];
@@ -2484,20 +2485,40 @@ int renderViaFbink(const Dashboard* dashboard, const char* status, const char* s
 #endif
 }
 
-int fetchToCache(const char* url, const char* cache) {
+int fetchToCache(const char* url, const char* read_token, const char* cache) {
   const long long started = monotonicMs();
   char tmp[320];
   snprintf(tmp, sizeof(tmp), "%s.tmp", cache);
   char quoted_tmp[400];
   char quoted_url[400];
-  char command[900];
+  char quoted_header[260];
+  char command[1100];
   shellQuote(tmp, quoted_tmp, sizeof(quoted_tmp));
   shellQuote(url, quoted_url, sizeof(quoted_url));
+  char header[200];
+  header[0] = '\0';
+  if (read_token && read_token[0]) {
+    snprintf(header, sizeof(header), "X-Dashboard-Read-Token: %.150s", read_token);
+    shellQuote(header, quoted_header, sizeof(quoted_header));
+  } else {
+    quoted_header[0] = '\0';
+  }
 
   if (commandExists("curl")) {
-    snprintf(command, sizeof(command), "curl -fsSL --connect-timeout 20 --max-time 55 --max-filesize %ld -o %s %s", kMaxDashboardPayloadBytes, quoted_tmp, quoted_url);
+    snprintf(command, sizeof(command), "curl -fsSL --connect-timeout 20 --max-time 55 --max-filesize %ld %s%s%s -o %s %s",
+             kMaxDashboardPayloadBytes,
+             quoted_header[0] ? "-H " : "",
+             quoted_header[0] ? quoted_header : "",
+             quoted_header[0] ? " " : "",
+             quoted_tmp,
+             quoted_url);
   } else if (commandExists("wget")) {
-    snprintf(command, sizeof(command), "wget -q -T 55 -O %s %s", quoted_tmp, quoted_url);
+    snprintf(command, sizeof(command), "wget -q -T 55 %s%s%s -O %s %s",
+             quoted_header[0] ? "--header=" : "",
+             quoted_header[0] ? quoted_header : "",
+             quoted_header[0] ? " " : "",
+             quoted_tmp,
+             quoted_url);
   } else {
     return 0;
   }
@@ -2857,6 +2878,7 @@ void startTouchWatcher(TouchInput*) {}
 
 struct EventWatcherArgs {
   char events_url[256];
+  char read_token[160];
   int sleep_start_minute;
   int sleep_end_minute;
 };
@@ -2924,7 +2946,16 @@ void* eventWatcherMain(void* raw) {
   }
 
   char quoted_url[400];
+  char quoted_header[260];
   shellQuote(args->events_url, quoted_url, sizeof(quoted_url));
+  char header[200];
+  header[0] = '\0';
+  if (args->read_token[0]) {
+    snprintf(header, sizeof(header), "X-Dashboard-Read-Token: %.150s", args->read_token);
+    shellQuote(header, quoted_header, sizeof(quoted_header));
+  } else {
+    quoted_header[0] = '\0';
+  }
   fprintf(stderr, "events=watching %s\n", args->events_url);
 
   while (g_running) {
@@ -2934,8 +2965,12 @@ void* eventWatcherMain(void* raw) {
       continue;
     }
 
-    char command[720];
-    snprintf(command, sizeof(command), "curl -fsSL --no-buffer --connect-timeout 20 --max-time 65 %s 2>/dev/null", quoted_url);
+    char command[900];
+    snprintf(command, sizeof(command), "curl -fsSL --no-buffer --connect-timeout 20 --max-time 65 %s%s%s %s 2>/dev/null",
+             quoted_header[0] ? "-H " : "",
+             quoted_header[0] ? quoted_header : "",
+             quoted_header[0] ? " " : "",
+             quoted_url);
     FILE* stream = popen(command, "r");
     if (!stream) {
       fprintf(stderr, "events=popen_failed\n");
@@ -2968,7 +3003,7 @@ void* eventWatcherMain(void* raw) {
   return NULL;
 }
 
-void startEventWatcher(const char* events_url, int sleep_start_minute, int sleep_end_minute) {
+void startEventWatcher(const char* events_url, const char* read_token, int sleep_start_minute, int sleep_end_minute) {
   if (!events_url || !events_url[0]) {
     fprintf(stderr, "events=disabled empty_url\n");
     return;
@@ -2980,6 +3015,7 @@ void startEventWatcher(const char* events_url, int sleep_start_minute, int sleep
     return;
   }
   copyText(args->events_url, sizeof(args->events_url), events_url);
+  if (read_token) copyText(args->read_token, sizeof(args->read_token), read_token);
   args->sleep_start_minute = sleep_start_minute;
   args->sleep_end_minute = sleep_end_minute;
 
@@ -3123,6 +3159,7 @@ void initOptions(Options* options) {
   copyText(options->url, sizeof(options->url), kDefaultUrl);
   copyText(options->events_url, sizeof(options->events_url), kDefaultEventsUrl);
   copyText(options->toggle_url, sizeof(options->toggle_url), kDefaultToggleUrl);
+  options->read_token[0] = '\0';
   options->toggle_token[0] = '\0';
   copyText(options->cache, sizeof(options->cache), kDefaultCache);
   options->render_only[0] = '\0';
@@ -3143,6 +3180,7 @@ int parseOptions(int argc, char** argv, Options* options) {
     if (strcmp(argv[i], "--url") == 0 && i + 1 < argc) copyText(options->url, sizeof(options->url), argv[++i]);
     else if (strcmp(argv[i], "--events-url") == 0 && i + 1 < argc) copyText(options->events_url, sizeof(options->events_url), argv[++i]);
     else if (strcmp(argv[i], "--toggle-url") == 0 && i + 1 < argc) copyText(options->toggle_url, sizeof(options->toggle_url), argv[++i]);
+    else if (strcmp(argv[i], "--read-token") == 0 && i + 1 < argc) copyText(options->read_token, sizeof(options->read_token), argv[++i]);
     else if (strcmp(argv[i], "--toggle-token") == 0 && i + 1 < argc) copyText(options->toggle_token, sizeof(options->toggle_token), argv[++i]);
     else if (strcmp(argv[i], "--cache") == 0 && i + 1 < argc) copyText(options->cache, sizeof(options->cache), argv[++i]);
     else if (strcmp(argv[i], "--interval") == 0 && i + 1 < argc) {
@@ -3170,7 +3208,7 @@ int parseOptions(int argc, char** argv, Options* options) {
     }
     else if (strcmp(argv[i], "--save-pgm") == 0 && i + 1 < argc) copyText(options->save_pgm, sizeof(options->save_pgm), argv[++i]);
     else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-      printf("Usage: %s [--url URL] [--events-url URL] [--toggle-url URL] [--toggle-token TOKEN] [--cache PATH] [--interval SECONDS] [--sleep-window HH:MM-HH:MM|off] [--once] [--invert-images]\n", argv[0]);
+      printf("Usage: %s [--url URL] [--events-url URL] [--toggle-url URL] [--read-token TOKEN] [--toggle-token TOKEN] [--cache PATH] [--interval SECONDS] [--sleep-window HH:MM-HH:MM|off] [--once] [--invert-images]\n", argv[0]);
       printf("       %s --render PATH [--view challenge|recipe|meal-recipe|chores|grocery] [--dump-pgm PATH] [--dump-size WIDTHxHEIGHT] [--save-pgm PATH]\n", argv[0]);
       exit(0);
     } else {
@@ -3207,7 +3245,7 @@ int main(int argc, char** argv) {
   initTouchInput(&touch);
   startTouchWatcher(&touch);
   if (!options.once && !options.render_only[0]) {
-    startEventWatcher(options.events_url, options.sleep_start_minute, options.sleep_end_minute);
+    startEventWatcher(options.events_url, options.read_token, options.sleep_start_minute, options.sleep_end_minute);
   }
 
   while (g_running) {
@@ -3257,7 +3295,7 @@ int main(int argc, char** argv) {
     }
     char dashboard_url[320];
     buildDashboardUrl(options.url, dashboard_url, sizeof(dashboard_url));
-    const int fetched = fetchToCache(dashboard_url, options.cache);
+    const int fetched = fetchToCache(dashboard_url, options.read_token, options.cache);
     if (!renderCachedPayload(&options, fetched ? "live" : "cached/offline")) {
       char lines[kMaxRows][96];
       int count = 0;

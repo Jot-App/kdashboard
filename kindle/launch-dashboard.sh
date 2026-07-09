@@ -9,6 +9,7 @@ CONFIG="${DASHBOARD_CONFIG:-/mnt/us/extensions/kindle-dashboard/config.sh}"
 DASHBOARD_DATA_URL="${DASHBOARD_DATA_URL:-}"
 DASHBOARD_EVENTS_URL="${DASHBOARD_EVENTS_URL:-}"
 DASHBOARD_TOGGLE_URL="${DASHBOARD_TOGGLE_URL:-}"
+DASHBOARD_READ_TOKEN="${DASHBOARD_READ_TOKEN:-}"
 DASHBOARD_TOGGLE_TOKEN="${DASHBOARD_TOGGLE_TOKEN:-}"
 NATIVE_APP="${NATIVE_APP:-/mnt/us/extensions/kindle-dashboard/bin/kindle-dashboard}"
 RUN_APP="${RUN_APP:-/tmp/kindle-dashboard-native}"
@@ -70,7 +71,7 @@ if [ -x "$NATIVE_APP" ]; then
   [ "$INVERT_IMAGES" = "1" ] && image_args="--invert-images"
   save_args=""
   [ -n "$SAVE_PGM" ] && save_args="--save-pgm $SAVE_PGM"
-  exec "$RUN_APP" --url "$DASHBOARD_DATA_URL" --events-url "$DASHBOARD_EVENTS_URL" --toggle-url "$DASHBOARD_TOGGLE_URL" --toggle-token "$DASHBOARD_TOGGLE_TOKEN" --cache "$CACHE" --interval "$INTERVAL" --sleep-window "$DASHBOARD_SLEEP_WINDOW" $image_args $save_args >> "$LOG" 2>&1
+  exec "$RUN_APP" --url "$DASHBOARD_DATA_URL" --events-url "$DASHBOARD_EVENTS_URL" --toggle-url "$DASHBOARD_TOGGLE_URL" --read-token "$DASHBOARD_READ_TOKEN" --toggle-token "$DASHBOARD_TOGGLE_TOKEN" --cache "$CACHE" --interval "$INTERVAL" --sleep-window "$DASHBOARD_SLEEP_WINDOW" $image_args $save_args >> "$LOG" 2>&1
 fi
 
 echo "Native dashboard binary not found at $NATIVE_APP." >&2

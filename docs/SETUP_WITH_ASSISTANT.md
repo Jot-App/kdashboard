@@ -109,7 +109,8 @@ Use this once the backend is deployed:
 ```text
 Generate the Kindle KUAL config.sh for my project. Use my InsForge base host for
 the data and toggle URLs, and use the direct function2 host for the events URL.
-Fetch DASHBOARD_TOGGLE_TOKEN from InsForge and include it in my local config.sh.
+Fetch DASHBOARD_READ_TOKEN and DASHBOARD_TOGGLE_TOKEN from InsForge and include
+them in my local config.sh.
 Do not modify config.sh.example with my real project values; create or show a
 local config.sh instead.
 ```
@@ -120,6 +121,7 @@ The generated config should look like:
 DASHBOARD_DATA_URL="https://your-project.insforge.app/functions/kindle-dashboard-data"
 DASHBOARD_EVENTS_URL="https://your-project.function2.insforge.app/kindle-dashboard-events"
 DASHBOARD_TOGGLE_URL="https://your-project.insforge.app/functions/kindle-dashboard-toggle"
+DASHBOARD_READ_TOKEN="replace-with-your-generated-read-token"
 DASHBOARD_TOGGLE_TOKEN="replace-with-your-generated-toggle-token"
 INTERVAL="3600"
 DASHBOARD_KEEP_AWAKE="1"
@@ -141,8 +143,8 @@ If Zig is installed:
 Build the Kindle KUAL package with make -C kindle/native extension-zig. If Zig
 is not on PATH, ask me for the Zig path. After the build, tell me where
 kindle-dashboard-kual.tar.gz was written and remind me to keep config.sh local.
-If installing to a mounted Kindle, set DASHBOARD_DATA_URL explicitly before
-running npm run native:install.
+If installing to a mounted Kindle, set DASHBOARD_DATA_URL and
+DASHBOARD_READ_TOKEN explicitly before running npm run native:install.
 ```
 
 If an ARM Kindle compiler is installed:
@@ -181,8 +183,8 @@ Useful checks:
 
 ```sh
 npm run check
-curl -sS https://your-project.insforge.app/functions/kindle-dashboard-data
-curl -N https://your-project.function2.insforge.app/kindle-dashboard-events
+curl -sS -H "X-Dashboard-Read-Token: <read-token>" https://your-project.insforge.app/functions/kindle-dashboard-data
+curl -N -H "X-Dashboard-Read-Token: <read-token>" https://your-project.function2.insforge.app/kindle-dashboard-events
 ```
 
 ## Human-Only Steps

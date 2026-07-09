@@ -6,6 +6,9 @@ The preferred Kindle surface is now a native C++ app launched by KUAL or upstart
 https://your-project.insforge.app/functions/kindle-dashboard-data
 ```
 
+The deployed dashboard endpoints require `DASHBOARD_READ_TOKEN`; the native
+launcher sends it as `X-Dashboard-Read-Token` from local `config.sh`.
+
 ## Build
 
 Run a local parser/render check on the Mac:
@@ -57,7 +60,7 @@ tar -C /mnt/us/extensions -xzf kindle-dashboard-kual.tar.gz
 If the Kindle is mounted on this Mac at `/Volumes/Kindle`, install directly with:
 
 ```sh
-npm run native:install
+DASHBOARD_DATA_URL=https://your-project.insforge.app/functions/kindle-dashboard-data DASHBOARD_READ_TOKEN=<read-token> npm run native:install
 ```
 
 KUAL menu actions:
