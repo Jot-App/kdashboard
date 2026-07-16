@@ -1,0 +1,32 @@
+{
+  "title": "Amit's Kindle Dashboard",
+  "date": "2026-07-16",
+  "weather": {
+    "temperature": 24,
+    "condition": "Cloudy"
+  },
+  "calendar": [
+    {
+      "time": "10:00",
+      "title": "Marketing Review"
+    }
+  ],
+  "checklist": [
+    "Review campaigns",
+    "Gym",
+    "Call distributor"
+  ],
+  "shopping": [
+    "Milk",
+    "Coffee",
+    "Eggs"
+  ],
+  "habits": {
+    "Reading": 14,
+    "Exercise": 11,
+    "Meditation": 7
+  },
+  "notices": [
+    "Dinner at 8 PM"
+  ]
+}
