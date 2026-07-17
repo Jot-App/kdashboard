@@ -29,7 +29,7 @@
           "done": true
         },
         {
-	  ""id": "call-distributor",
+	  "id": "call-distributor",
           "text": "Call distributor",
           "done": false
         }
@@ -40,12 +40,12 @@
       "title": "Shopping List",
       "items": [
         {
-	  ""id": "milk",
+	  "id": "milk",
           "text": "Milk",
           "done": false
         },
         {
-	  "id": "coffee"
+	  "id": "coffee",
           "text": "Coffee",
           "done": false
         },
