@@ -1,32 +1,54 @@
 {
-  "title": "Amit's Kindle Dashboard",
-  "date": "2026-07-16",
-  "weather": {
-    "temperature": 24,
-    "condition": "Cloudy"
-  },
-  "calendar": [
+  "ok": true,
+  "generated_at": "2026-07-16",
+  "version": "1.0",
+  "steps": 8500,
+  "calories": 2100,
+  "protein_g": 120,
+  "water_l": 2.5,
+  "water_target_l": 3.0,
+  "sleep_hours": 7.5,
+  "sleep_target_hours": 8.0,
+  "workouts": 4,
+  "workout_target": 5,
+  "day": 17,
+
+  "lists": [
     {
-      "time": "10:00",
-      "title": "Marketing Review"
+      "key": "checklist",
+      "title": "Daily Checklist",
+      "items": [
+        {
+          "title": "Review campaigns",
+          "done": false
+        },
+        {
+          "title": "Gym",
+          "done": true
+        },
+        {
+          "title": "Call distributor",
+          "done": false
+        }
+      ]
+    },
+    {
+      "key": "shopping",
+      "title": "Shopping List",
+      "items": [
+        {
+          "title": "Milk",
+          "done": false
+        },
+        {
+          "title": "Coffee",
+          "done": false
+        },
+        {
+          "title": "Eggs",
+          "done": true
+        }
+      ]
     }
-  ],
-  "checklist": [
-    "Review campaigns",
-    "Gym",
-    "Call distributor"
-  ],
-  "shopping": [
-    "Milk",
-    "Coffee",
-    "Eggs"
-  ],
-  "habits": {
-    "Reading": 14,
-    "Exercise": 11,
-    "Meditation": 7
-  },
-  "notices": [
-    "Dinner at 8 PM"
   ]
 }
