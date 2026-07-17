@@ -19,15 +19,18 @@
       "title": "Daily Checklist",
       "items": [
         {
-          "title": "Review campaigns",
+	  "id": "review-campaigns",
+          "text": "Review campaigns",
           "done": false
         },
         {
-          "title": "Gym",
+	  "id": "gym",
+          "text": "Gym",
           "done": true
         },
         {
-          "title": "Call distributor",
+	  ""id": "call-distributor",
+          "text": "Call distributor",
           "done": false
         }
       ]
@@ -37,15 +40,18 @@
       "title": "Shopping List",
       "items": [
         {
-          "title": "Milk",
+	  ""id": "milk",
+          "text": "Milk",
           "done": false
         },
         {
-          "title": "Coffee",
+	  "id": "coffee"
+          "text": "Coffee",
           "done": false
         },
         {
-          "title": "Eggs",
+	  "id": "eggs",
+          "text": "Eggs",
           "done": true
         }
       ]
