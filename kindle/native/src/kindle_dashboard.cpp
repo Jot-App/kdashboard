@@ -2307,7 +2307,10 @@ void flashTouchRectOnFramebuffer(Rect rect) {
   const int right = rect.x + rect.w > static_cast<int>(vinfo.xres) ? static_cast<int>(vinfo.xres) : rect.x + rect.w;
   const int bottom = rect.y + rect.h > static_cast<int>(vinfo.yres) ? static_cast<int>(vinfo.yres) : rect.y + rect.h;
   invertFramebufferArea(fb, &vinfo, &finfo, left, top, right, bottom, 0);
-  msync(fb, screensize, MS_SYNC);
+fprintf(stderr, "framebuffer: before msync\n");  
+msync(fb, screensize, MS_SYNC);
+fprintf(stderr, "framebuffer: after msync\n");
+fprintf(stderr, "framebuffer: before eips\n");
   system("eips '' >/dev/null 2>&1 || true");
   usleep(120000);
   invertFramebufferArea(fb, &vinfo, &finfo, left, top, right, bottom, 0);
@@ -2319,7 +2322,9 @@ void flashTouchRectOnFramebuffer(Rect rect) {
 }
 
 int renderToFramebuffer(const Dashboard* dashboard, const char* status, const char* save_pgm) {
+fprintf(stderr, "framebuffer: start\n");
   int fd = open("/dev/fb0", O_RDWR);
+fprintf(stderr, "framebuffer: open fd=%d\n", fd);
   if (fd < 0) {
     fprintf(stderr, "render=framebuffer open_failed\n");
     return 0;
@@ -2340,6 +2345,7 @@ int renderToFramebuffer(const Dashboard* dashboard, const char* status, const ch
   }
   const long screensize = static_cast<long>(finfo.line_length) * static_cast<long>(vinfo.yres_virtual ? vinfo.yres_virtual : vinfo.yres);
   unsigned char* fb = static_cast<unsigned char*>(mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+fprintf(stderr, "framebuffer: mmap=%p\n", fb);
   if (fb == MAP_FAILED) {
     fprintf(stderr, "render=framebuffer mmap_failed\n");
     close(fd);
@@ -2356,20 +2362,37 @@ int renderToFramebuffer(const Dashboard* dashboard, const char* status, const ch
     close(fd);
     return 0;
   }
+fprintf(stderr, "framebuffer: drawing\n");
   drawCurrentDashboard(&canvas, dashboard, status);
+fprintf(stderr, "framebuffer: draw complete\n");
   if (save_pgm && save_pgm[0]) {
     writePgm(save_pgm, &canvas);
     fprintf(stderr, "render=save-pgm %s width=%d height=%d\n", save_pgm, canvas.width, canvas.height);
   }
   for (int y = kKindleStatusBarHeight; y < canvas.height; y++) {
-    for (int x = 0; x < canvas.width; x++) putFramebufferPixel(fb, &vinfo, &finfo, x, y, canvas.pixels[y * canvas.width + x]);
-  }
+
+    if ((y % 100) == 0)
+        fprintf(stderr, "framebuffer: row=%d\n", y);
+
+    for (int x = 0; x < canvas.width; x++) {
+        putFramebufferPixel(
+            fb,
+            &vinfo,
+            &finfo,
+            x,
+            y,
+            canvas.pixels[y * canvas.width + x]
+        );
+    }
+}
+
   free(canvas.pixels);
   msync(fb, screensize, MS_SYNC);
   munmap(fb, screensize);
   close(fd);
   system("eips '' >/dev/null 2>&1 || true");
   fprintf(stderr, "render=framebuffer ok width=%d height=%d bpp=%d\n", static_cast<int>(vinfo.xres), static_cast<int>(vinfo.yres), static_cast<int>(vinfo.bits_per_pixel));
+fprintf(stderr, "framebuffer: success\n");
   return 1;
 }
 #else
@@ -2381,10 +2404,24 @@ int renderToFramebuffer(const Dashboard*, const char*, const char*) {
 void flashTouchRectOnFramebuffer(Rect) {}
 #endif
 
+#include <unistd.h>
+
 int commandExists(const char* command) {
-  char probe[160];
-  snprintf(probe, sizeof(probe), "command -v '%s' >/dev/null 2>&1", command);
-  return system(probe) == 0;
+  char path[256];
+
+  snprintf(path, sizeof(path), "/usr/bin/%s", command);
+  if (access(path, X_OK) == 0) return 1;
+
+  snprintf(path, sizeof(path), "/usr/sbin/%s", command);
+  if (access(path, X_OK) == 0) return 1;
+
+  snprintf(path, sizeof(path), "/bin/%s", command);
+  if (access(path, X_OK) == 0) return 1;
+
+  snprintf(path, sizeof(path), "/sbin/%s", command);
+  if (access(path, X_OK) == 0) return 1;
+
+  return 0;
 }
 
 void shellQuote(const char* text, char* out, size_t out_size) {
@@ -2436,17 +2473,8 @@ void returnToKindleHome() {
   );
 }
 
-int renderViaFbink(const Dashboard* dashboard, const char* status, const char* save_pgm) {
-  (void)dashboard;
-  (void)status;
-  (void)save_pgm;
-  fprintf(stderr, "render=fbink skipped preserve_status_bar\n");
-  return 0;
-#if 0
-  if (!commandExists("fbink")) {
-    fprintf(stderr, "render=fbink unavailable\n");
-    return 0;
-  }
+
+  int renderViaFbink(const Dashboard* dashboard, const char* status, const char* save_pgm) {
 
   Canvas canvas;
   canvas.width = kBitmapFallbackWidth;
@@ -2471,10 +2499,21 @@ int renderViaFbink(const Dashboard* dashboard, const char* status, const char* s
   free(canvas.pixels);
 
   char quoted_path[180];
-  char command[420];
-  shellQuote(path, quoted_path, sizeof(quoted_path));
-  snprintf(command, sizeof(command), "fbink -c -W GC16 -g file=%s,w=-1,h=-1,dither >/dev/null", quoted_path);
-  const int status_code = system(command);
+char command[420];
+shellQuote(path, quoted_path, sizeof(quoted_path));
+
+snprintf(command, sizeof(command),
+         "/mnt/us/extensions/MRInstaller/bin/K5/fbink -c -W GC16 -g file=%s,w=-1,h=-1,dither >/dev/null",
+         quoted_path);
+
+fprintf(stderr, "fbink-command=%s\n", command);
+fflush(stderr);
+
+const int status_code = system(command);
+
+fprintf(stderr, "fbink-status=%d\n", status_code);
+fflush(stderr);
+
   if (status_code == 0) {
     fprintf(stderr, "render=fbink ok image=%s\n", path);
     return 1;
@@ -2482,7 +2521,6 @@ int renderViaFbink(const Dashboard* dashboard, const char* status, const char* s
 
   fprintf(stderr, "render=fbink failed status=%d\n", status_code);
   return 0;
-#endif
 }
 
 int fetchToCache(const char* url, const char* read_token, const char* cache) {
@@ -2505,7 +2543,7 @@ int fetchToCache(const char* url, const char* read_token, const char* cache) {
   }
 
   if (commandExists("curl")) {
-    snprintf(command, sizeof(command), "curl -fsSL --connect-timeout 20 --max-time 55 --max-filesize %ld %s%s%s -o %s %s",
+    snprintf(command, sizeof(command), "curl -k -fsSL --connect-timeout 20 --max-time 55 --max-filesize %ld %s%s%s -o %s %s",
              kMaxDashboardPayloadBytes,
              quoted_header[0] ? "-H " : "",
              quoted_header[0] ? quoted_header : "",
